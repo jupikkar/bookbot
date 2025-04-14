@@ -1,8 +1,11 @@
 """Main code for bookbot."""
 import logging
+import sys
 from collections import defaultdict
 from pathlib import Path
 from string import ascii_lowercase
+
+from stats import get_num_words
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
@@ -17,10 +20,9 @@ def main(file: str) -> None:
 
     """
     book = read_book(file)
-    words = book.split()
+    get_num_words(book)
     character_counts = count_characters(book)
     logging.info(f"--- Begin report of {file} ---")  # noqa: G004
-    logging.info(f"{len(words)} words found in the document")  # noqa: G004
     character_counts = dict(sorted(
         character_counts.items(),
         key=lambda item: item[1],
@@ -28,7 +30,7 @@ def main(file: str) -> None:
     )
     for c in character_counts:
         if c in ascii_lowercase:
-            print(f"The character {c} was found {character_counts[c]} times")
+            print(f"{c}: {character_counts[c]}")
 
 def count_characters(text: str) -> dict[str, int]:
     """Count character appearances in given text.
@@ -60,5 +62,9 @@ def read_book(file: Path) -> str:
         return f.read()
 
 if __name__ == "__main__":
-    book = Path("books/frankenstein.txt")
+    expected_args = 2
+    if len(sys.argv) != expected_args:
+        print("Usage: python3 main.py <path_to_book>")
+        sys.exit(1)
+    book = Path(sys.argv[1])
     main(book)
